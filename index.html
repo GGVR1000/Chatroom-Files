@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Public Chat</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        #chat-area { display: none; } /* Hidden by default */
+        #messages { list-style: none; padding: 0; border: 1px solid #ccc; height: 300px; overflow-y: scroll; }
+        .system { color: gray; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <input id="username" placeholder="Choose a username..." />
+        <button onclick="joinChat()">Join Chat</button>
+    </div>
+
+    <div id="chat-area">
+        <ul id="messages"></ul>
+        <input id="input" autocomplete="off" /><button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let myName = "";
+
+        function joinChat() {
+            myName = document.getElementById('username').value;
+            if (myName) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('chat-area').style.display = 'block';
+                socket.emit('join', myName);
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('input');
+            socket.emit('chat message', input.value);
+            input.value = '';
+        }
+
+        socket.on('chat message', function(data) {
+            const item = document.createElement('li');
+            item.innerHTML = `<b>${data.user}:</b> ${data.text}`;
+            document.getElementById('messages').appendChild(item);
+        });
+    </script>
+</body>
+</html>
